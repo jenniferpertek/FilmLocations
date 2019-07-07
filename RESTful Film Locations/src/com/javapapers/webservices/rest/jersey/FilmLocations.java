@@ -3,6 +3,7 @@ package com.javapapers.webservices.rest.jersey;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Scanner;
 
 import javax.ws.rs.GET;
@@ -23,55 +24,64 @@ public class FilmLocations {
 	@Produces(MediaType.APPLICATION_JSON)
 	public ArrayList<Film> getObject(@QueryParam("title") String title, @QueryParam("locations") String locations) {
 		// this would be the data from the original api
-//		DataFromOriginalAPI data = new DataFromOriginalAPI();
-//		ArrayList<Film> films = data.getData();
 		
-		// this is just test-data
-		ArrayList<Film> a = new ArrayList<>();
-		a.add(new Film("film1", "wien"));
-		a.add(new Film("film2", "brig"));
-		a.add(new Film("film3", "brig"));
-		a.add(new Film("film4", "brig"));
+		if(title == null && locations == null) {
+			return getDataFromOriginalAPI();
+		} else if(title == null && locations != null) {
+			System.out.println("im in here");
+			return getLocations(locations);
+		} else if(title != null && locations == null) {
+			return getTitles(title);
+		} else {
+			return getTitleAndLoc(title, locations);
+		}
+
+	}
+	
+	public ArrayList<Film> getTitleAndLoc(String title, String locations) {
+		ArrayList<Film> films = getDataFromOriginalAPI();
 		
-		//only display the data that was searched for
 		ArrayList<Film> temp = new ArrayList<>();
-		for (int i = 0; i < a.size(); i++) {
-			if(a.get(i).getTitle().equals(title) && a.get(i).getLocations().equals(locations)) {
-				temp.add(a.get(i));
-			} else if(title == null && a.get(i).getLocations().equals(locations)) {
-				temp.add(a.get(i));
-			} else if (a.get(i).getTitle().equals(title) && locations == null) {
-				temp.add(a.get(i));
+		for (int i = 0; i < films.size(); i++) {
+			if(films.get(i).getTitle().equals(title) && films.get(i).getLocations().equals(locations)) {
+				temp.add(films.get(i));
 			}
 		}
 		
-		// return data that was searched
+		return temp;
+	}
+
+	public ArrayList<Film> getLocations(String locations) {
+		ArrayList<Film> films = getDataFromOriginalAPI();
+		
+		ArrayList<Film> temp = new ArrayList<>();
+		for (int i = 0; i < films.size(); i++) {
+			if(films.get(i).getLocations() != null) {
+				if(films.get(i).getLocations().equals(locations)) {
+					temp.add(films.get(i));
+				}
+			}
+		}
+		
+		return temp;
+	}
+	
+	public ArrayList<Film> getTitles(String title) {
+		ArrayList<Film> films = getDataFromOriginalAPI();
+		
+		ArrayList<Film> temp = new ArrayList<>();
+		for (int i = 0; i < films.size(); i++) {
+			if(films.get(i).getTitle() != null) {
+				if(films.get(i).getTitle().equals(title)) {
+					temp.add(films.get(i));
+				}
+			}
+		}
+		
 		return temp;
 	}
 		
-
-	@GET
-	@Path("/allFilms")
-	@Produces(MediaType.APPLICATION_JSON)
-	public ArrayList<Film> viewAllFilms() {
-		ArrayList<Film> a = new ArrayList<>();
-		// this would be the data from the original api
-//		DataFromOriginalAPI data = new DataFromOriginalAPI();
-//		ArrayList<Film> films = data.getData();
-		
-		// this is just test-data
-		a.add(new Film("film1", "wien"));
-		a.add(new Film("film2", "brig"));
-		a.add(new Film("film3", "brig"));
-		a.add(new Film("film4", "brig"));
-		
-		//show all the films
-		return a;
-	}
-
-	
 	public ArrayList<Film> getDataFromOriginalAPI() {
-		System.out.println("im inside hello");
 		String inline = "";
 		try {
 			URL url = new URL("https://data.sfgov.org/resource/wwmu-gmzc.json"); 
@@ -82,12 +92,10 @@ public class FilmLocations {
 							
 			if(responsecode != 200) {
 				System.out.println("Response code is: " +responsecode);
-				//return null;
 			} else {
 				Scanner sc = new Scanner(url.openStream());
 				while(sc.hasNext()) { 
 					inline+=sc.nextLine();
-					System.out.println(inline);
 				}
 				sc.close();
 			}
@@ -101,18 +109,14 @@ public class FilmLocations {
 				String titleFilm = (String)filmObject.get("title");
 				String locations = (String)filmObject.get("locations");
 				
-				System.out.println("im now adding something");
-				
-				films.add(new Film(titleFilm, locations));
-				
-//				System.out.println("Title: " + titleFilm);
-//				System.out.println("Location: " + locations);
-				
+				films.add(new Film(titleFilm, locations));				
 			}
 			conn.disconnect();
+			
 			return films;	
 			
 		} catch(Exception e) { e.printStackTrace(); }
+		
 		return null;
 	}
 
