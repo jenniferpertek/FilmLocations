@@ -23,21 +23,24 @@ public class FilmLocations {
 	@Path("/film")
 	@Produces(MediaType.APPLICATION_JSON)
 	public ArrayList<Film> getObject(@QueryParam("title") String title, @QueryParam("locations") String locations) {
-		// this would be the data from the original api
 		
+		//if no parameters are given then display all films
 		if(title == null && locations == null) {
 			return getDataFromOriginalAPI();
 		} else if(title == null && locations != null) {
-			System.out.println("im in here");
+			//if only the location is given, search for all films in this location
 			return getLocations(locations);
 		} else if(title != null && locations == null) {
+			//if only the title is given, search for this title with all its locations
 			return getTitles(title);
 		} else {
+			//if both parameters are given, make an exact search
 			return getTitleAndLoc(title, locations);
 		}
 
 	}
 	
+	//exact search
 	public ArrayList<Film> getTitleAndLoc(String title, String locations) {
 		ArrayList<Film> films = getDataFromOriginalAPI();
 		
@@ -51,6 +54,7 @@ public class FilmLocations {
 		return temp;
 	}
 
+	//searching only with location as parameter
 	public ArrayList<Film> getLocations(String locations) {
 		ArrayList<Film> films = getDataFromOriginalAPI();
 		
@@ -66,6 +70,7 @@ public class FilmLocations {
 		return temp;
 	}
 	
+	//searching only with title as parameter
 	public ArrayList<Film> getTitles(String title) {
 		ArrayList<Film> films = getDataFromOriginalAPI();
 		
@@ -81,6 +86,7 @@ public class FilmLocations {
 		return temp;
 	}
 		
+	//reading data from original api
 	public ArrayList<Film> getDataFromOriginalAPI() {
 		String inline = "";
 		try {
